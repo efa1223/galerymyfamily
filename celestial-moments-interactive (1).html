@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Celestial Family Gallery - Portable Interactive Archive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- Lucide icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #020617;
+        color: #f1f5f9;
+        margin: 0;
+        min-height: 100vh;
+      }
+      .glow-cyan {
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+      }
+      .glow-purple {
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+      }
+      .glow-indigo {
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+      }
+      .glow-green {
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+      }
+    </style>
+  </head>
+  <body class="relative overflow-x-hidden antialiased pb-12">
+    <!-- Moving Space Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black"></div>
+      <div class="absolute top-10 left-10 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px]"></div>
+      <div class="absolute bottom-10 right-10 w-80 h-80 bg-cyan-600/10 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8">
+      
+      <!-- Sticky Navigation Header -->
+      <header class="flex items-center justify-between pb-6 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-600 shadow-[0_0_15px_rgba(34,211,238,0.5)] flex items-center justify-center">
+            <i data-lucide="globe" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <span class="text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">CELESTIAL ARCHIVE</span>
+            <p class="text-[9px] font-mono tracking-widest text-cyan-400 uppercase">Interactive Dynamic Client Portal</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono text-slate-500 hidden sm:inline">EXPORTED: 23/6/2026 19.41.05 WIB</span>
+          <button id="btnResetData" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-[10px] font-mono transition">
+            RESET DATABASE
+          </button>
+        </div>
+      </header>
+
+      <!-- Connection & Status Card -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        <!-- Welcome Banner (8 cols) -->
+        <div class="lg:col-span-7 relative overflow-hidden rounded-[30px] bg-slate-900/30 p-6 md:p-8 border border-white/5 shadow-2xl flex flex-col justify-between">
+          <div class="space-y-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 rounded-full text-[10px] font-bold uppercase tracking-wider font-mono">
+              <i data-lucide="sparkles" class="w-3 h-3 text-cyan-300 animate-spin"></i> INTERACTIVE COMPANION ACTIVE
+            </span>
+            <h2 class="font-sans font-bold text-2xl md:text-3xl text-slate-200">Arsip Dinamis & Sinkronisasi Mandiri</h2>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed font-light">
+              Arsip portabel ini sepenuhnya responsif, interaktif, dan menyimpan data secara lokal pada web browser Anda (<span class="text-cyan-400">LocalStorage</span>). Anda dapat mengunggah momen baru, memfilter kategori orbit, dan menyambungkan webhook Google Sheet Anda secara instan dari dokumen mandiri ini!
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-4 border-t border-white/5 font-mono text-xs text-slate-400">
+            <div>
+              <span class="text-[9px] text-slate-500 uppercase block">Kapsul Terarsip</span>
+              <span id="badgeCount" class="text-sm font-bold text-slate-200">0 Momen</span>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-500 uppercase block">Penyimpanan</span>
+              <span class="text-sm font-bold text-emerald-400">Browser LocalStorage</span>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <span class="text-[9px] text-slate-500 uppercase block">Koneksi Sheet</span>
+              <span id="badgeSyncStatus" class="text-sm font-bold text-yellow-400">Offline Standalone</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sheet Integration Direct API (5 cols) -->
+        <div class="lg:col-span-5 rounded-[30px] bg-slate-900/40 p-6 border border-white/5 shadow-2xl space-y-4 flex flex-col justify-between">
+          <div>
+            <h3 class="font-sans font-bold text-sm text-slate-200 flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i> Google Sheet Endpoint Sync
+            </h3>
+            <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+              Hubungkan arsip mandiri ini langsung dengan Google Sheets Web App Anda atau Google Workspace Webhook URL. Ketika Anda mengunggah momen dari halaman ini, data akan terkirim secara otomatis!
+            </p>
+          </div>
+          
+          <div class="space-y-2">
+            <div>
+              <label class="block text-[9px] font-mono text-slate-400 uppercase mb-1">Webhook / GAS Web App URL</label>
+              <input id="webhookUrlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec" 
+                class="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500/50" />
+            </div>
+            <button id="btnSaveWebhook" class="w-full py-2 bg-slate-800 hover:bg-slate-700/80 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i data-lucide="save" class="w-3.5 h-3.5"></i> Simpan Parameter Webhook
+            </button>
+          </div>
+
+          <p class="text-[9px] text-slate-500 font-mono">
+            *Tips: Pasang kode penangan POST request pada Google Apps Script Anda untuk mencatat momen secara global.*
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Live Search & Controls -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/20 p-4 border border-white/5 rounded-2xl">
+        <!-- Planet / Orbit Filters -->
+        <div id="filterContainer" class="flex flex-wrap gap-2 shrink-0 w-full md:w-auto">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Search Bar and Launch Moments Button -->
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div class="relative flex-grow md:max-w-xs w-full">
+            <i data-lucide="search" class="absolute left-3.5 top-2.5 w-4 h-4 text-slate-500"></i>
+            <input id="searchInput" type="text" placeholder="Cari memoar, judul, atau kru..." 
+              class="w-full bg-slate-950 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500/50" />
+          </div>
+          <button id="openUploadModalBtn" class="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 rounded-xl text-xs font-bold tracking-wide text-white shadow-lg shadow-cyan-900/20 transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4 text-cyan-200"></i> LAUNCH MOMENT
+          </button>
+        </div>
+      </div>
+
+      <!-- Feedback Toast Notification -->
+      <div id="toastNotification" class="hidden fixed bottom-6 right-6 z-50 p-4 bg-slate-900 border border-cyan-500/30 text-slate-100 rounded-2xl shadow-2xl flex items-center gap-3 max-w-sm animate-bounce">
+        <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-grow">
+          <p id="toastMessage" class="text-xs font-semibold">Tugas Berhasil!</p>
+        </div>
+        <button onclick="document.getElementById('toastNotification').classList.add('hidden')" class="text-slate-500 hover:text-white px-2">✕</button>
+      </div>
+
+      <!-- main Moments Directory Grid -->
+      <div id="momentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Ported dynamic display loads here -->
+      </div>
+
+      <!-- No Moments Placeholder -->
+      <div id="emptyContainer" class="hidden p-16 text-center space-y-4 rounded-3xl bg-slate-900/10 border border-dashed border-white/10">
+        <div class="w-16 h-16 rounded-full bg-slate-900/80 mx-auto flex items-center justify-center text-slate-600 border border-white/5">
+          <i data-lucide="camera-off" class="w-8 h-8"></i>
+        </div>
+        <div class="max-w-sm mx-auto">
+          <h4 class="text-slate-300 font-bold text-sm">Tidak Ada Transmisi Ditemukan</h4>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">Coba ganti filter orbit bintang Anda atau luncurkan kapsul momen baru ke kosmos!</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="h-14 bg-black/60 rounded-2xl border border-white/5 px-8 flex items-center justify-between text-[10px] text-slate-500 tracking-[0.2em] font-mono z-20">
+        <div>COSMIC DYNAMIC SYSTEM</div>
+        <div>STANDALONE DIRECT-SYNC PORTAL V1.1</div>
+      </footer>
+    </div>
+
+    <!-- upload Moment Modal -->
+    <div id="uploadModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-lg bg-slate-900/95 border border-white/15 rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal Top Bar -->
+        <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-black/30">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+            <span class="font-bold text-sm text-slate-200">LAUNCH DYNAMIC KAPSUL MOMEN</span>
+          </div>
+          <button id="closeUploadModalBtn" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/5 transition">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="uploadForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <!-- Error Field inside modal -->
+          <div id="modalError" class="hidden p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs flex items-center justify-between">
+            <span id="modalErrorMessage">Isi berkas!</span>
+            <button type="button" onclick="document.getElementById('modalError').classList.add('hidden')" class="px-1 font-bold">✕</button>
+          </div>
+
+          <!-- File Upload Zone -->
+          <div id="dropZone" class="group relative rounded-3xl border-2 border-dashed border-white/15 bg-slate-950/40 p-6 text-center cursor-pointer hover:border-cyan-500/50 transition">
+            <input type="file" id="fileInput" accept="image/*" class="hidden" />
+            <div id="dropZonePrompt" class="space-y-2">
+              <div class="w-12 h-12 bg-slate-900 text-slate-400 mx-auto rounded-full flex items-center justify-center border border-white/5 shadow-inner">
+                <i data-lucide="clapperboard" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-300 font-medium">Instal Foto Keluarga Anda</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Drag & Drop di sini atau klik untuk menelusuri folder</p>
+              </div>
+            </div>
+            <!-- Preview of dynamic image -->
+            <div id="imagePreviewContainer" class="hidden relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-white/10">
+              <img id="imagePreview" class="w-full h-full object-cover" />
+              <button type="button" id="btnRemoveImage" class="absolute top-2 right-2 p-1.5 bg-black/80 hover:bg-black text-rose-400 rounded-full border border-white/15 shadow">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Form Fields -->
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[9px] font-mono text-slate-400 uppercase mb-1">Orbit Planet / Orbit Bintang</label>
+                <select id="inputPlanet" class="w-full bg-slate-950 border border-white/10 focus:border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none">
+                  <option value="Earth Base">Earth Base</option>
+                  <option value="Saturn Rings">Saturn Rings</option>
+                  <option value="Mars Colony">Mars Colony</option>
+                  <option value="Jupiter Core">Jupiter Core</option>
+                  <option value="Neptune Abyss">Neptune Abyss</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[9px] font-mono text-slate-400 uppercase mb-1">Kru / Anggota Keluarga</label>
+                <input id="inputCrew" type="text" placeholder="Contoh: Ayah, Ibu, Zahira" 
+                  class="w-full bg-slate-950 border border-white/10 focus:border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-mono text-slate-400 uppercase mb-1">Judul Momen</label>
+              <input id="inputTitle" type="text" placeholder="Beri judul kenangan berharga ini..." required
+                class="w-full bg-slate-950 border border-white/10 focus:border-cyan-500/50 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-mono text-slate-400 uppercase mb-1">Zurnal Caption / Memoar Keluarga</label>
+              <textarea id="inputCaption" rows="3" placeholder="Tulis rincian zurnal petualangan keluarga di sini agar terekam abadi..." required
+                class="w-full bg-slate-950 border border-white/10 focus:border-cyan-500/50 rounded-xl p-3 text-xs text-slate-300 focus:outline-none"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[9px] font-mono text-slate-400 uppercase mb-1">Tanggal Bumi</label>
+                <input id="inputDate" type="date" required 
+                  class="w-full bg-slate-950 border border-white/10 focus:border-cyan-500/50 rounded-xl p-2 text-xs text-slate-300 focus:outline-none" />
+              </div>
+              <div class="flex items-end">
+                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-900/30 transition">
+                  KIRIM TRANSMISI
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Detail Viewer Modal -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-2xl bg-slate-900/95 border border-white/15 rounded-[45px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Image display -->
+        <div class="relative aspect-video w-full bg-black">
+          <img id="detailImage" class="w-full h-full object-cover" />
+          <button onclick="document.getElementById('detailModal').classList.add('hidden')" class="absolute top-4 right-4 text-white bg-black/60 rounded-full p-2 hover:bg-black transition">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+          <div class="absolute top-4 left-4">
+            <span id="detailPlanetBadge" class="px-3.5 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-black/75 text-cyan-300 border border-white/10 backdrop-blur-md">
+              -
+            </span>
+          </div>
+        </div>
+
+        <div class="p-6 md:p-8 space-y-4">
+          <div>
+            <p id="detailDate" class="text-[10px] font-mono text-cyan-300 uppercase"></p>
+            <h3 id="detailTitle" class="text-xl font-bold font-sans text-white mt-1"></h3>
+          </div>
+
+          <div class="p-4 bg-slate-950/60 rounded-2xl border border-white/5">
+            <p id="detailCaption" class="text-xs text-slate-300 font-light leading-relaxed whitespace-pre-wrap"></p>
+          </div>
+
+          <div class="pt-4 border-t border-white/5 flex flex-wrap items-center justify-between text-xs font-mono text-slate-500 gap-2">
+            <div>
+              Family Crew: <span id="detailCrew" class="text-cyan-400 font-bold"></span>
+            </div>
+            <div>
+              ID Kapsul: <span id="detailId" class="text-indigo-400"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script Section for dynamic processing -->
+    <script>
+      // 1. Initial State Handling
+      let moments = [];
+      const base64DataRaw = "W3siaWQiOiJST1dfMiIsInBsYW5ldCI6IlNhdHVybiBSaW5ncyIsInRpdGxlIjoiTWFrYW4gTWFsYW0gVWxhbmcgVGFodW4gSWJ1IGRpIE9yYml0IFNhdHVybnVzIiwiZGF0ZSI6IjIwMjYtMDUtMTIiLCJpbWFnZVVybCI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNTQ0OTI0NDA1LWIxZWEwZGM3ZGIzNj9hdXRvPWZvcm1hdCZmaXQ9Y3JvcCZxPTgwJnc9MTIwMCIsImNhcHRpb24iOiJTZW55dW0gaGFuZ2F0IElidSBtZW5nYWxhaGthbiBraWxhdWFuIGp1dGFhbiBlcyBkaSBDaW5jaW4gU2F0dXJudXMuIE1ha2FuIG1hbGFtIGJlcmxhdGFyIGJlbGFrYW5nIGJhZGFpIGdhcyBrdW5pbmcga2VlbWFzYW4geWFuZyBtZWdhaCBkaSBiZWxhaGFuIHV0YXJhIFNhdHVybnVzLiIsImZhbWlseU1lbWJlcnMiOiJBeWFoLCBJYnUsIFJpYW4sIFphaGlyYSIsInNvdXJjZSI6InNoZWV0In0seyJpZCI6IlJPV18zIiwicGxhbmV0IjoiTWFycyBDb2xvbnkiLCJ0aXRsZSI6IlBpa25payBLdWJhaCBCaW9kb21lIENhbnlvbnMiLCJkYXRlIjoiMjAyNi0wNi0wNSIsImltYWdlVXJsIjoiaHR0cHM6Ly9pbWFnZXMudW5zcGxhc2guY29tL3Bob3RvLTE0OTI2OTE1Mjc3MTktOWQxZTA3ZTUzNGI0P2F1dG89Zm9ybWF0JmZpdD1jcm9wJnE9ODAmdz0xMjAwIiwiY2FwdGlvbiI6Ik1lbmlrbWF0aSBzdHJvYmVyaSBzZWdhciBoYXNpbCBwYW5lbiBwZXJ0YW1hIGhpZHJvcG9uaWsgZGkgTWFycyBkZW5nYW4gcGVtYW5kYW5nYW4gbGVtYmFoIFZhbGxlcyBNYXJpbmVyaXMgeWFuZyBtZWdhaC4gS2FrYWsgbHVwYSBtZW1iYXdhIGFpciwgdW50dW5nIHNpc3RlbSBmaWx0cmFzaSBhaXIgZGF1ciB1bGFuZyBiZWtlcmphIHNlbXB1cm5hISIsImZhbWlseU1lbWJlcnMiOiJBeWFoLCBJYnUsIFJpYW4sIFphaGlyYSwgS3VjaW5nIFBpcCIsInNvdXJjZSI6InNoZWV0In0seyJpZCI6IlJPV180IiwicGxhbmV0IjoiRWFydGggQmFzZSIsInRpdGxlIjoiTWVtYW5kYW5nIEJpbnRhbmcgZGkgQXRhcyBHdW51bmcgR2VkZSIsImRhdGUiOiIyMDI1LTA4LTE5IiwiaW1hZ2VVcmwiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTUxNzg0MTkwNTI0MC00NzI5ODhiYWJkZjk/YXV0bz1mb3JtYXQmZml0PWNyb3AmcT04MCZ3PTEyMDAiLCJjYXB0aW9uIjoiU2ViZWx1bSBzZW11YSBwZXR1YWxhbmdhbiBnYWxha3NpIGluaSBkaW11bGFpLCBpbmkgYWRhbGFoIG1hbGFtIHRlcmFraGlyIGtpdGEgYmVya3VtcHVsIGxlbmdrYXAgZGkgQnVtaS4gTWVuZ2d1bmFrYW4gdGVsZXNrb3Aga3VubyBtZWxpaGF0IGthd2FoIEJ1bGFuLiIsImZhbWlseU1lbWJlcnMiOiJBeWFoLCBJYnUsIFJpYW4sIFphaGlyYSwgS2FrZWssIE5lbmVrIiwic291cmNlIjoic2hlZXQifSx7ImlkIjoiUk9XXzUiLCJwbGFuZXQiOiJKdXBpdGVyIENvcmUiLCJ0aXRsZSI6IlNlbnNhc2kgR3Jhdml0YXNpIFN0YXNpdW4gRXVyb3BhIE9yYml0IiwiZGF0ZSI6IjIwMjYtMDQtMDEiLCJpbWFnZVVybCI6Imh0dHBzOi8vaW1hZ2VzLnVuc3BsYXNoLmNvbS9waG90by0xNTA2ODY5NjQ4MjcwLTQ3NmE2OGFmYzM3Mz9hdXRvPWZvcm1hdCZmaXQ9Y3JvcCZxPTgwJnc9MTIwMCIsImNhcHRpb24iOiJNZW5nYW1iYW5nIGJlYmFzIGRpIGRlayBvYnNlcnZhc2kgRXVyb3BhISBKdXBpdGVyIHRhbXBhayBsdWFyIGJpYXNhIGJlc2FyIGRhcmkgc2luaSwgc2VwZXJ0aSBib2xhIG1hcm1lciBnYXMgcmFrc2FzYSB5YW5nIG1lbnV0dXBpIHNlbHVydWggY2FrcmF3YWxhLiIsImZhbWlseU1lbWJlcnMiOiJaYWhpcmEsIFJpYW4iLCJzb3VyY2UiOiJzaGVldCJ9LHsiaWQiOiJST1dfNiIsInBsYW5ldCI6Ik5lcHR1bmUgQWJ5c3MiLCJ0aXRsZSI6Ik1lbmplbGFqYWggQXdhbiBCZXJsaWFuIGRpIFRyaXRvbiIsImRhdGUiOiIyMDI2LTA2LTE4IiwiaW1hZ2VVcmwiOiJodHRwczovL2ltYWdlcy51bnNwbGFzaC5jb20vcGhvdG8tMTQ1MTE4NzU4MDQ1OS00MzQ5MDI3OWMwZmE/YXV0bz1mb3JtYXQmZml0PWNyb3AmcT04MCZ3PTEyMDAiLCJjYXB0aW9uIjoiU3VodSBzdXBlciBkaW5naW4gZGkgbHVhciwgdGFwaSBwZWx1a2FuIGhhbmdhdCBrZWx1YXJnYSBkaSBkYWxhbSBrYXBzdWwgVHJpdG9uIFJvdmVyIG1lbWJ1YXQgcGV0dWFsYW5nYW4gYmVyYnVydSBrcmlzdGFsIG1ldGFuYSBpbmkgc2FuZ2F0IGJlcmhhcmdhLiIsImZhbWlseU1lbWJlcnMiOiJBeWFoLCBJYnUsIFphaGlyYSIsInNvdXJjZSI6InNoZWV0In0seyJpZCI6IlJPV183IiwicGxhbmV0IjoiRWFydGggQmFzZSIsInRpdGxlIjoidGlzYSIsImRhdGUiOiIyMDI2LTA2LTIzIiwiaW1hZ2VVcmwiOiIvdXBsb2Fkcy9mYW1pbHlfMTc4MjIxNTk2NTA1MS5qcGciLCJjYXB0aW9uIjoiYmVyc2FtYSB0aXNhIiwiZmFtaWx5TWVtYmVycyI6ImJ1bmRhIHRpc2EiLCJzb3VyY2UiOiJ3ZWIifSx7ImlkIjoiUk9XXzgiLCJwbGFuZXQiOiJFYXJ0aCBCYXNlIiwidGl0bGUiOiJ5IiwiZGF0ZSI6IjIwMjYtMDYtMjMiLCJpbWFnZVVybCI6Ii91cGxvYWRzL2ZhbWlseV8xNzgyMjE4MzgwMzI1LmpwZyIsImNhcHRpb24iOiJ5IiwiZmFtaWx5TWVtYmVycyI6InkiLCJzb3VyY2UiOiJ3ZWIifV0=";
+      try {
+        moments = JSON.parse(decodeURIComponent(escape(atob(base64DataRaw))));
+      } catch (err) {
+        console.error("Gagal mem-parsing data inisial terarsip murni:", err);
+      }
+      
+      let savedWebhookUrl = localStorage.getItem('celestial_webhook_url') || '';
+      const defaultPlanets = ["All Orbits", "Earth Base", "Saturn Rings", "Mars Colony", "Jupiter Core", "Neptune Abyss"];
+      let activeFilter = "All Orbits";
+      let base64Image = "";
+
+      // Check if we are running in Google Apps Script context
+      const isGAS = typeof google !== "undefined" && google.script && google.script.run;
+
+      // Initialize
+      function init() {
+        const stored = localStorage.getItem('celestial_moments_archive');
+        if (stored) {
+          try {
+            moments = JSON.parse(stored);
+          } catch(e) {
+            console.error("Stale storage parsed error, fall back to base64 embedded data");
+          }
+        } else {
+          localStorage.setItem('celestial_moments_archive', JSON.stringify(moments));
+        }
+
+        // Webhook setup
+        document.getElementById('webhookUrlInput').value = savedWebhookUrl;
+        updateBadgeSync();
+
+        renderFilters();
+        renderMoments();
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+        // If running inside Google Apps Script, fetch latest moments from sheet
+        if (isGAS) {
+          updateBadgeSync();
+          google.script.run
+            .withSuccessHandler(function(remoteMoments) {
+              if (Array.isArray(remoteMoments)) {
+                moments = remoteMoments;
+                localStorage.setItem('celestial_moments_archive', JSON.stringify(moments));
+                renderMoments();
+                triggerToast("🔄 Sinkronisasi Spreadsheet asli berhasil!");
+              }
+            })
+            .withFailureHandler(function(err) {
+              console.error("Gagal sync via Google Apps Script:", err);
+              triggerToast("⚠️ Gagal sinkronisasi Spreadsheet asli.");
+            })
+            .getMomentsFromSheet();
+        }
+      }
+
+      function updateBadgeSync() {
+        const badge = document.getElementById('badgeSyncStatus');
+        if (isGAS) {
+          badge.className = "text-sm font-bold text-cyan-400 animate-pulse";
+          badge.textContent = "Apps Script Live DB";
+        } else if (savedWebhookUrl) {
+          badge.className = "text-sm font-bold text-green-400";
+          badge.textContent = "Google Sheets Active";
+        } else {
+          badge.className = "text-sm font-bold text-yellow-400";
+          badge.textContent = "Offline Standalone";
+        }
+      }
+
+      // Render planet orbit switches
+      function renderFilters() {
+        const container = document.getElementById('filterContainer');
+        container.innerHTML = '';
+        
+        defaultPlanets.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = `px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider font-bold rounded-full border transition-all duration-200 ${
+            activeFilter === p 
+              ? 'bg-cyan-500/10 border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.15)]' 
+              : 'bg-transparent border-white/5 hover:border-white/20 text-slate-400 hover:text-white'
+          }`;
+          btn.textContent = p === "All Orbits" ? "🪐 ALL ORBITS" : p;
+          btn.addEventListener('click', () => {
+            activeFilter = p;
+            renderFilters();
+            renderMoments();
+          });
+          container.appendChild(btn);
+        });
+      }
+
+      // Render actual lists
+      function renderMoments() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const grid = document.getElementById('momentsGrid');
+        const empty = document.getElementById('emptyContainer');
+        grid.innerHTML = '';
+
+        const filtered = moments.filter(m => {
+          const matchesPlanet = activeFilter === "All Orbits" || m.planet === activeFilter;
+          const matchesSearch = 
+            m.title.toLowerCase().includes(query) || 
+            (m.caption && m.caption.toLowerCase().includes(query)) ||
+            (m.familyMembers && m.familyMembers.toLowerCase().includes(query));
+          return matchesPlanet && matchesSearch;
+        });
+
+        document.getElementById('badgeCount').textContent = `${moments.length} Momen`;
+
+        if (filtered.length === 0) {
+          empty.classList.remove('hidden');
+          grid.classList.add('hidden');
+          return;
+        }
+
+        empty.classList.add('hidden');
+        grid.classList.remove('hidden');
+
+        filtered.forEach(m => {
+          const isMars = m.planet === "Mars Colony";
+          const isSaturn = m.planet === "Saturn Rings";
+          const isJupiter = m.planet === "Jupiter Core";
+          const isEarth = m.planet === "Earth Base";
+
+          const hoverGlow = 
+            isMars ? "hover:border-rose-500/40 glow-purple" :
+            isSaturn ? "hover:border-amber-500/40 glow-cyan" :
+            isJupiter ? "hover:border-purple-500/40 glow-indigo" :
+            isEarth ? "hover:border-emerald-500/40 glow-green" :
+            "hover:border-cyan-500/45 glow-cyan";
+
+          const card = document.createElement('div');
+          card.className = `group relative bg-slate-900/50 rounded-[35px] border border-white/5 p-2 overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col justify-between cursor-pointer ${hoverGlow}`;
+          
+          card.innerHTML = `
+            <div class="relative aspect-[16/10] rounded-[28px] overflow-hidden bg-slate-950 border-2 border-slate-800/50">
+              <img src="${m.imageUrl}" alt="${m.title}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600'" />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#020617]/95 via-[#020617]/20 to-transparent"></div>
+              
+              <div class="absolute top-4 left-4">
+                <span class="px-3 py-1 rounded-full text-[9px] font-bold tracking-wider uppercase bg-black/60 text-cyan-300 border border-white/10 backdrop-blur-md">
+                  ${m.planet}
+                </span>
+              </div>
+              <div class="absolute top-4 right-4 text-[9px] font-mono bg-black/80 border border-slate-800 text-indigo-400 px-2.5 py-1 rounded-full">
+                ID: ${m.id}
+              </div>
+            </div>
+
+            <div class="p-4 flex-1 flex flex-col justify-between">
+              <div>
+                <p class="text-[9px] font-mono text-slate-400 mb-1">Tanggal: ${m.date}</p>
+                <h3 class="font-sans font-bold text-sm text-slate-200 line-clamp-1 group-hover:text-cyan-400 transition mb-1.5">${m.title}</h3>
+                <p class="text-xs text-slate-400 leading-relaxed font-light line-clamp-2 mb-4">${m.caption || ''}</p>
+              </div>
+              <div class="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                <span>By: <span class="text-cyan-400 font-bold">${m.familyMembers || 'Semua Kru'}</span></span>
+                <span class="text-purple-400 hover:underline">Detail →</span>
+              </div>
+            </div>
+          `;
+
+          // Click detail Modal
+          card.addEventListener('click', () => {
+            const detailModal = document.getElementById('detailModal');
+            document.getElementById('detailImage').src = m.imageUrl;
+            document.getElementById('detailPlanetBadge').textContent = m.planet;
+            document.getElementById('detailDate').textContent = `Orbit Date: ${m.date} Earth Time`;
+            document.getElementById('detailTitle').textContent = m.title;
+            document.getElementById('detailCaption').textContent = m.caption || 'Zurnal memoar kosong.';
+            document.getElementById('detailCrew').textContent = m.familyMembers || 'Semua Kru';
+            document.getElementById('detailId').textContent = m.id;
+            
+            detailModal.classList.remove('hidden');
+          });
+
+          grid.appendChild(card);
+        });
+        
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      // Show toast
+      function triggerToast(message) {
+        const toast = document.getElementById('toastNotification');
+        document.getElementById('toastMessage').textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 5000);
+      }
+
+      // Event listeners
+      document.getElementById('searchInput').addEventListener('input', renderMoments);
+
+      // Webhook Save
+      document.getElementById('btnSaveWebhook').addEventListener('click', () => {
+        const urlVal = document.getElementById('webhookUrlInput').value.trim();
+        savedWebhookUrl = urlVal;
+        localStorage.setItem('celestial_webhook_url', urlVal);
+        updateBadgeSync();
+        triggerToast("Berhasil menyimpan Webhook Sinkronisasi Google Sheets!");
+      });
+
+      // Reset Data triggers
+      document.getElementById('btnResetData').addEventListener('click', () => {
+        if(confirm("Apakah Anda ingin menggugurkan data LocalStorage dan menyetel ulang dengan snapshot bawaan saat ekspor?")) {
+          localStorage.removeItem('celestial_moments_archive');
+          moments = JSON.parse(decodeURIComponent(escape(atob(base64DataRaw))));
+          localStorage.setItem('celestial_moments_archive', JSON.stringify(moments));
+          renderMoments();
+          triggerToast("Database disetel ulang ke kondisi awal!");
+        }
+      });
+
+      // Modal Controls
+      const uploadModal = document.getElementById('uploadModal');
+      document.getElementById('openUploadModalBtn').addEventListener('click', () => {
+        // Preset date
+        document.getElementById('inputDate').value = new Date().toISOString().substring(0, 10);
+        uploadModal.classList.remove('hidden');
+      });
+      document.getElementById('closeUploadModalBtn').addEventListener('click', () => {
+        uploadModal.classList.add('hidden');
+        clearModalForm();
+      });
+
+      // Clear Form state
+      function clearModalForm() {
+        document.getElementById('inputTitle').value = '';
+        document.getElementById('inputCaption').value = '';
+        document.getElementById('inputCrew').value = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('dropZonePrompt').classList.remove('hidden');
+        document.getElementById('modalError').classList.add('hidden');
+        base64Image = "";
+      }
+
+      // File Selection logic
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('fileInput');
+
+      dropZone.addEventListener('click', () => {
+        if (!base64Image) fileInput.click();
+      });
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.className = "group relative rounded-3xl border-2 border-dashed border-cyan-500 bg-slate-950/80 p-6 text-center cursor-pointer transition";
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.className = "group relative rounded-3xl border-2 border-dashed border-white/15 bg-slate-950/40 p-6 text-center cursor-pointer hover:border-cyan-500/50 transition";
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.className = "group relative rounded-3xl border-2 border-dashed border-white/15 bg-slate-950/40 p-6 text-center cursor-pointer hover:border-cyan-500/50 transition";
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          processFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          processFile(e.target.files[0]);
+        }
+      });
+
+      function processFile(file) {
+        if (!file.type.startsWith('image/')) {
+          showModalError("Format file harus berupa File Gambar!");
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          base64Image = e.target.result;
+          document.getElementById('imagePreview').src = base64Image;
+          document.getElementById('imagePreviewContainer').classList.remove('hidden');
+          document.getElementById('dropZonePrompt').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      document.getElementById('btnRemoveImage').addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.value = '';
+        base64Image = '';
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('dropZonePrompt').classList.remove('hidden');
+      });
+
+      function showModalError(msg) {
+        const errorDiv = document.getElementById('modalError');
+        document.getElementById('modalErrorMessage').textContent = msg;
+        errorDiv.classList.remove('hidden');
+      }
+
+      // Handle Submit Moment
+      document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        document.getElementById('modalError').classList.add('hidden');
+
+        const title = document.getElementById('inputTitle').value.trim();
+        const caption = document.getElementById('inputCaption').value.trim();
+        const planet = document.getElementById('inputPlanet').value;
+        const familyMembers = document.getElementById('inputCrew').value.trim() || 'Semua Kru';
+        const date = document.getElementById('inputDate').value;
+        const imageUrl = base64Image || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600";
+
+        if (!title || !caption) {
+          showModalError("Semua formulir harus diisi!");
+          return;
+        }
+
+        const newMoment = {
+          id: String(Date.now()),
+          title,
+          caption,
+          planet,
+          familyMembers,
+          date,
+          imageUrl,
+          source: 'local'
+        };
+
+        // Add to array
+        moments.unshift(newMoment);
+        localStorage.setItem('celestial_moments_archive', JSON.stringify(moments));
+        
+        uploadModal.classList.add('hidden');
+        clearModalForm();
+        renderMoments();
+        triggerToast("🚀 Moment berhasil diposting ke Kosmos!");
+
+        // If in Google Apps Script mode
+        if (isGAS) {
+          triggerToast("Meluncurkan ke Google Sheet via Apps Script...");
+          google.script.run
+            .withSuccessHandler(function(res) {
+              triggerToast("🚀 Transmisi disinkronkan ke Google Sheet asli!");
+              if (res && res.moment) {
+                // Remove the transient local copy and use the official one
+                moments = moments.filter(m => String(m.id) !== String(newMoment.id));
+                moments.unshift(res.moment);
+                localStorage.setItem('celestial_moments_archive', JSON.stringify(moments));
+                renderMoments();
+              }
+            })
+            .withFailureHandler(function(err) {
+              console.error("Gagal menambahkan via Apps Script:", err);
+              triggerToast("❌ Gagal menyimpan ke Spreadsheet: " + err);
+            })
+            .addMomentToSheet(newMoment);
+        } else if (savedWebhookUrl) {
+          try {
+            triggerToast("Melakukan Sinkronisasi dengan Google Sheets...");
+            const response = await fetch(savedWebhookUrl, {
+              method: 'POST',
+              mode: 'no-cors', // Direct bypass for CORS or simple triggers
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newMoment)
+            });
+            triggerToast("🚀 Transmisi disinkronkan ke Google Sheet Webhook!");
+          } catch (syncErr) {
+            console.error('Webhook sync failed:', syncErr);
+            triggerToast("⚠️ Webhook gagal merespons, namun berhasil disimpan lokal!");
+          }
+        }
+      });
+
+      // Start application
+      window.onload = init;
+    </script>
+  </body>
+</html>
